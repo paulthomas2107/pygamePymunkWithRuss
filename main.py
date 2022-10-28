@@ -240,7 +240,8 @@ while run:
 
     # Check for cleared table
     if len(balls) == 1:
-        draw_text("*** You cleared up and WON !! ***", large_font, WHITE, SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT / 2 - 100)
+        draw_text("*** You cleared up and WON !! ***", large_font, WHITE, SCREEN_WIDTH / 2 - 160,
+                  SCREEN_HEIGHT / 2 - 100)
         game_running = False
 
     # Event listener
