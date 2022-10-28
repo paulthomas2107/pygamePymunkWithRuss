@@ -1,6 +1,7 @@
 import pygame
 import pymunk
 import pymunk.pygame_util
+import math
 
 pygame.init()
 
@@ -22,6 +23,8 @@ FPS = 120
 
 # Game vars
 dia = 36
+taking_shot = True
+force = 2000
 
 # Colours
 BG = (50, 50, 50)
@@ -68,12 +71,12 @@ balls.append(cue_ball)
 
 # Create six pockets on table
 pockets = [
-  (55, 63),
-  (592, 48),
-  (1134, 64),
-  (55, 616),
-  (592, 629),
-  (1134, 616)
+    (55, 63),
+    (592, 48),
+    (1134, 64),
+    (55, 616),
+    (592, 629),
+    (1134, 616)
 ]
 
 # Cushion coordinates
@@ -106,10 +109,22 @@ class Cue:
     def __init__(self, pos):
         self.original_image = cue_image
         self.angle = 0
-        self.image = cue_image
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = pos
 
+    def update(self, angle):
+        self.angle = angle
+
+    def draw(self, surface):
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        surface.blit(self.image,
+                     (self.rect.centerx - self.image.get_width() / 2,
+                      self.rect.centery - self.image.get_height() / 2)
+                     )
+
+
+cue = Cue(balls[-1].body.position)
 
 # Game loop
 run = True
@@ -128,12 +143,31 @@ while run:
     for i, ball in enumerate(balls):
         screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
 
+    # Check all balls stopped
+    taking_shot = True
+    for ball in balls:
+        if int(ball.body.velocity[0]) != 0 or int(ball.body.velocity[1]) != 0:
+            taking_shot = False
+
+    # Draw cue
+    if taking_shot:
+        # Calc cue angle
+        mouse_pos = pygame.mouse.get_pos()
+        cue.rect.center = balls[-1].body.position
+        x_dist = balls[-1].body.position[0] - mouse_pos[0]
+        y_dist = -(balls[-1].body.position[1] - mouse_pos[1])
+        cue_angle = math.degrees(math.atan2(y_dist, x_dist))
+        cue.update(cue_angle)
+        cue.draw(screen)
+
     # Event listener
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            cue_ball.body.apply_impulse_at_local_point((-500, 0), (0, 0))
+            x_impulse = math.cos(math.radians(cue_angle))
+            y_impulse = math.sin(math.radians(cue_angle))
+            balls[-1].body.apply_impulse_at_local_point((force * -x_impulse, force * y_impulse), (0, 0))
 
     # space.debug_draw(draw_options)
     pygame.display.update()
