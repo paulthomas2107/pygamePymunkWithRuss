@@ -31,11 +31,18 @@ force_direction = 1
 taking_shot = True
 powering_up = False
 cue_ball_potted = False
+game_running = True
 potted_balls = []
+lives = 3
 
 # Colours
 BG = (50, 50, 50)
 RED = (255, 0, 0)
+WHITE = (255, 255, 255)
+
+# Fonts
+font = pygame.font.SysFont("Lato", 30)
+large_font = pygame.font.SysFont("Lato", 60)
 
 # Load images
 cue_image = pygame.image.load("assets/images/cue.png").convert_alpha()
@@ -44,6 +51,12 @@ ball_images = []
 for i in range(1, 17):
     ball_image = pygame.image.load(f"assets/images/ball_{i}.png").convert_alpha()
     ball_images.append(ball_image)
+
+
+# Output text to screen
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 
 # Ball function
@@ -160,6 +173,7 @@ while run:
             if ball_dist <= pocket_dia / 2:
                 # check for potted white
                 if i == len(balls) - 1:
+                    lives -= 1
                     cue_ball_potted = True
                     ball.body.position = (-100, -100)
                     ball.body.velocity = (0.0, 0.0)
@@ -180,7 +194,7 @@ while run:
             taking_shot = False
 
     # Draw cue
-    if taking_shot:
+    if taking_shot and game_running:
         if cue_ball_potted:
             # Reposition cue ball
             balls[-1].body.position = (888, SCREEN_HEIGHT / 2)
@@ -195,7 +209,7 @@ while run:
         cue.draw(screen)
 
     # Power up cue
-    if powering_up:
+    if powering_up and game_running:
         force += 100 * force_direction
         if force >= max_force or force <= 0:
             force_direction *= -1
@@ -213,10 +227,21 @@ while run:
 
     # Draw bottom panel
     pygame.draw.rect(screen, BG, (0, SCREEN_HEIGHT, SCREEN_WIDTH, BOTTOM_PANEL))
+    draw_text("Lives: " + str(lives), font, WHITE, SCREEN_WIDTH - 200, SCREEN_HEIGHT + 10)
 
     # Draw potted balls in panel
     for i, ball in enumerate(potted_balls):
         screen.blit(ball, (10 + (i * 50), SCREEN_HEIGHT + 10))
+
+    # Check for game over
+    if lives <= 0:
+        draw_text("*** Game Over !!! ***", large_font, WHITE, SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT / 2 - 100)
+        game_running = False
+
+    # Check for cleared table
+    if len(balls) == 1:
+        draw_text("*** You cleared up and WON !! ***", large_font, WHITE, SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT / 2 - 100)
+        game_running = False
 
     # Event listener
     for event in pygame.event.get():
