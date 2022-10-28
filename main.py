@@ -27,7 +27,12 @@ dia = 36
 BG = (50, 50, 50)
 
 # Load images
+cue_image = pygame.image.load("assets/images/cue.png").convert_alpha()
 table_image = pygame.image.load("assets/images/table.png").convert_alpha()
+ball_images = []
+for i in range(1, 17):
+    ball_image = pygame.image.load(f"assets/images/ball_{i}.png").convert_alpha()
+    ball_images.append(ball_image)
 
 
 # Ball function
@@ -51,7 +56,7 @@ rows = 5
 # Potting Balls
 for col in range(5):
     for row in range(rows):
-        pos = (250 + (col * dia), 267 + (row * dia) + (col * dia / 2))
+        pos = (250 + (col * dia + 1), 267 + (row * (dia + 1)) + (col * dia / 2))
         new_ball = create_ball(dia / 2, pos)
         balls.append(new_ball)
     rows -= 1
@@ -95,6 +100,17 @@ def create_cushion(poly_dims):
 for c in cushions:
     create_cushion(c)
 
+
+# Create pool cue
+class Cue:
+    def __init__(self, pos):
+        self.original_image = cue_image
+        self.angle = 0
+        self.image = cue_image
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+
+
 # Game loop
 run = True
 while run:
@@ -108,6 +124,10 @@ while run:
     # Pool Table
     screen.blit(table_image, (0, 0))
 
+    # Draw pool balls
+    for i, ball in enumerate(balls):
+        screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
+
     # Event listener
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -115,7 +135,7 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN:
             cue_ball.body.apply_impulse_at_local_point((-500, 0), (0, 0))
 
-    space.debug_draw(draw_options)
+    # space.debug_draw(draw_options)
     pygame.display.update()
 
 pygame.quit()
