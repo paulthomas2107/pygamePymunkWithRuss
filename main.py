@@ -20,6 +20,9 @@ draw_options = pymunk.pygame_util.DrawOptions(screen)
 clock = pygame.time.Clock()
 FPS = 120
 
+# Game vars
+dia = 36
+
 # Colours
 BG = (50, 50, 50)
 
@@ -33,6 +36,7 @@ def create_ball(radius, pos):
     body.position = pos
     shape = pymunk.Circle(body, radius)
     shape.mass = 5
+    shape.elasticity = 0.8
     # Use pivot to add friction
     pivot = pymunk.PivotJoint(static_body, body, (0, 0), (0, 0))
     pivot.max_bias = 0
@@ -41,9 +45,31 @@ def create_ball(radius, pos):
     return shape
 
 
-new_ball = create_ball(25, (300, 300))
+# Setup Game Balls
+balls = []
+rows = 5
+# Potting Balls
+for col in range(5):
+    for row in range(rows):
+        pos = (250 + (col * dia), 267 + (row * dia) + (col * dia / 2))
+        new_ball = create_ball(dia / 2, pos)
+        balls.append(new_ball)
+    rows -= 1
 
-cue_ball = create_ball(25, (600, 310))
+# Cue ball
+pos = (888, SCREEN_HEIGHT / 2)
+cue_ball = create_ball(dia / 2, pos)
+balls.append(cue_ball)
+
+# Create six pockets on table
+pockets = [
+  (55, 63),
+  (592, 48),
+  (1134, 64),
+  (55, 616),
+  (592, 629),
+  (1134, 616)
+]
 
 # Cushion coordinates
 cushions = [
@@ -61,6 +87,7 @@ def create_cushion(poly_dims):
     body = pymunk.Body(body_type=pymunk.Body.STATIC)
     body.position = (0, 0)
     shape = pymunk.Poly(body, poly_dims)
+    shape.elasticity = 0.8
     space.add(body, shape)
 
 
