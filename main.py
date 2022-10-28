@@ -23,6 +23,9 @@ FPS = 120
 # Colours
 BG = (50, 50, 50)
 
+# Load images
+table_image = pygame.image.load("assets/images/table.png").convert_alpha()
+
 
 # Ball function
 def create_ball(radius, pos):
@@ -42,6 +45,29 @@ new_ball = create_ball(25, (300, 300))
 
 cue_ball = create_ball(25, (600, 310))
 
+# Cushion coordinates
+cushions = [
+    [(88, 56), (109, 77), (555, 77), (564, 56)],
+    [(621, 56), (630, 77), (1081, 77), (1102, 56)],
+    [(89, 621), (110, 600), (556, 600), (564, 621)],
+    [(622, 621), (630, 600), (1081, 600), (1102, 621)],
+    [(56, 96), (77, 117), (77, 560), (56, 581)],
+    [(1143, 96), (1122, 117), (1122, 560), (1143, 581)]
+]
+
+
+# Create cushions
+def create_cushion(poly_dims):
+    body = pymunk.Body(body_type=pymunk.Body.STATIC)
+    body.position = (0, 0)
+    shape = pymunk.Poly(body, poly_dims)
+    space.add(body, shape)
+
+
+# Generate cushions
+for c in cushions:
+    create_cushion(c)
+
 # Game loop
 run = True
 while run:
@@ -51,6 +77,9 @@ while run:
 
     # Fill background
     screen.fill(BG)
+
+    # Pool Table
+    screen.blit(table_image, (0, 0))
 
     # Event listener
     for event in pygame.event.get():
