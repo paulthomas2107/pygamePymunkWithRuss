@@ -7,9 +7,10 @@ pygame.init()
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 678
+BOTTOM_PANEL = 50
 
 # Screen window
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT + BOTTOM_PANEL))
 pygame.display.set_caption("Pool")
 
 # Pymunk space
@@ -23,11 +24,14 @@ FPS = 120
 
 # Game vars
 dia = 36
+pocket_dia = 66
 taking_shot = True
 force = 0
 max_force = 10000
 force_direction = 1
 powering_up = False
+potted_balls = []
+
 
 # Colours
 BG = (50, 50, 50)
@@ -73,7 +77,7 @@ pos = (888, SCREEN_HEIGHT / 2)
 cue_ball = create_ball(dia / 2, pos)
 balls.append(cue_ball)
 
-# Create six pockets on table
+# Create pockets
 pockets = [
     (55, 63),
     (592, 48),
@@ -147,6 +151,18 @@ while run:
     # Pool Table
     screen.blit(table_image, (0, 0))
 
+    # Check for potted balls
+    for i, ball in enumerate(balls):
+        for pocket in pockets:
+            ball_x_dist = abs(ball.body.position[0] - pocket[0])
+            ball_y_dist = abs(ball.body.position[1] - pocket[1])
+            ball_dist = math.sqrt((ball_x_dist ** 2) + (ball_y_dist ** 2))
+            if ball_dist <= pocket_dia / 2:
+                space.remove(ball.body)
+                balls.remove(ball)
+                potted_balls.append(ball_images[i])
+                ball_images.pop(i)
+
     # Draw pool balls
     for i, ball in enumerate(balls):
         screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
@@ -176,7 +192,7 @@ while run:
         # Draw power
         for b in range(math.ceil(force / 2000)):
             screen.blit(power_bar,
-                        (balls[-1].body.position[0] + (b * 15),
+                        (balls[-1].body.position[0] - 30 + (b * 15),
                          balls[-1].body.position[1] + 30))
     elif not powering_up and taking_shot:
         x_impulse = math.cos(math.radians(cue_angle))
@@ -184,6 +200,10 @@ while run:
         balls[-1].body.apply_impulse_at_local_point((force * -x_impulse, force * y_impulse), (0, 0))
         force = 0
         force_direction = 1
+
+    # Draw potted balls in panel
+    for i, ball in enumerate(potted_balls):
+        screen.blit(ball, (10 + (i * 50), SCREEN_HEIGHT + 10))
 
     # Event listener
     for event in pygame.event.get():
