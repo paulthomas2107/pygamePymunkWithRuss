@@ -25,6 +25,8 @@ FPS = 120
 dia = 36
 taking_shot = True
 force = 0
+max_force = 10000
+force_direction = 1
 powering_up = False
 
 # Colours
@@ -163,12 +165,15 @@ while run:
 
     # Power up cue
     if powering_up:
-        force += 100
+        force += 100 * force_direction
+        if force >= max_force or force <= 0:
+            force_direction *= -1
     elif not powering_up and taking_shot:
         x_impulse = math.cos(math.radians(cue_angle))
         y_impulse = math.sin(math.radians(cue_angle))
         balls[-1].body.apply_impulse_at_local_point((force * -x_impulse, force * y_impulse), (0, 0))
         force = 0
+        force_direction = 1
 
     # Event listener
     for event in pygame.event.get():
